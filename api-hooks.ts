@@ -1,21 +1,28 @@
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api, { setAuthToken } from "./api";
 
 // --- Auth ---
 export function useLogin() {
-  return useMutation(
-    async ({ email, password }: { email: string; password: string }) => {
+  return useMutation({
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => {
       const { data } = await api.post("/api/auth/login", { email, password });
-      setAuthToken(data.token);
+      if (data?.token) {
+        await setAuthToken(data.token);
+      }
       return data;
     },
-    { cacheTime: 0 },
-  );
+  });
 }
 
 export function useRegisterSalesman() {
-  return useMutation(
-    async (payload: {
+  return useMutation({
+    mutationFn: async (payload: {
       name: string;
       email: string;
       phone: string;
@@ -24,116 +31,112 @@ export function useRegisterSalesman() {
       const { data } = await api.post("/api/auth/register", payload);
       return data;
     },
-    { cacheTime: 0 },
-  );
+  });
 }
 
 // --- Users ---
 export function useCurrentUser() {
-  return useQuery(
-    "currentUser",
-    async () => {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
       const { data } = await api.get("/api/user/me");
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useUsers(params: { page?: number; limit?: number }) {
-  return useQuery(
-    ["users", params],
-    async () => {
+  return useQuery({
+    queryKey: ["users", params],
+    queryFn: async () => {
       const { data } = await api.get("/api/users", { params });
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useUser(id: string) {
-  return useQuery(
-    ["user", id],
-    async () => {
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: async () => {
       const { data } = await api.get(`/api/users/${id}`);
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useDeleteUser() {
-  return useMutation(
-    async (id: string) => {
+  return useMutation({
+    mutationFn: async (id: string) => {
       const { data } = await api.delete(`/api/users/${id}`);
       return data;
     },
-    { cacheTime: 0 },
-  );
+  });
 }
 
 // --- Products ---
 export function useProducts(params: { page?: number; limit?: number }) {
-  return useQuery(
-    ["products", params],
-    async () => {
+  return useQuery<any[]>({
+    queryKey: ["products", params],
+    queryFn: async () => {
       const { data } = await api.get("/api/products", { params });
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useProduct(id: string) {
-  return useQuery(
-    ["product", id],
-    async () => {
+  return useQuery({
+    queryKey: ["product", id],
+    queryFn: async () => {
       const { data } = await api.get(`/api/products/${id}`);
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useCreateProduct() {
-  return useMutation(
-    async (payload: any) => {
+  return useMutation({
+    mutationFn: async (payload: any) => {
       const { data } = await api.post("/api/products", payload);
       return data;
     },
-    { cacheTime: 0 },
-  );
+  });
 }
 
 export function useBulkCreateProducts() {
-  return useMutation(
-    async (payload: any[]) => {
+  return useMutation({
+    mutationFn: async (payload: any[]) => {
       const { data } = await api.post("/api/products/bulk", payload);
       return data;
     },
-    { cacheTime: 0 },
-  );
+  });
 }
 
 // --- Changes ---
 export function useChanges() {
-  return useQuery(
-    "changes",
-    async () => {
+  return useQuery({
+    queryKey: ["changes"],
+    queryFn: async () => {
       const { data } = await api.get("/api/changes");
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
 
 export function useChange(id: string) {
-  return useQuery(
-    ["change", id],
-    async () => {
+  return useQuery({
+    queryKey: ["change", id],
+    queryFn: async () => {
       const { data } = await api.get(`/api/changes/${id}`);
       return data;
     },
-    { cacheTime: 0 },
-  );
+    staleTime: 0,
+  });
 }
