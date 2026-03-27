@@ -9,7 +9,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { getAuthToken } from "../api";
