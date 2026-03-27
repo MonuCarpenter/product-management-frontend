@@ -11,11 +11,25 @@ export function useLogin() {
       email: string;
       password: string;
     }) => {
-      const { data } = await api.post("/api/auth/login", { email, password });
-      if (data?.token) {
-        await setAuthToken(data.token);
+      try {
+        const { data } = await api.post("/api/auth/login", { email, password });
+        if (data?.token) {
+          await setAuthToken(data.token);
+        }
+        return data;
+      } catch (error: any) {
+        const status = error?.response?.status;
+        const message =
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Login failed";
+
+        throw {
+          status,
+          message,
+        };
       }
-      return data;
     },
   });
 }
@@ -78,7 +92,10 @@ export function useDeleteUser() {
 }
 
 // --- Products ---
-export function useProducts(params: { page?: number; limit?: number }) {
+export function useProducts(
+  params: { page?: number; limit?: number },
+  options?: { enabled?: boolean },
+) {
   return useQuery<any[]>({
     queryKey: ["products", params],
     queryFn: async () => {
@@ -86,6 +103,7 @@ export function useProducts(params: { page?: number; limit?: number }) {
       return data;
     },
     staleTime: 0,
+    enabled: options?.enabled ?? true,
   });
 }
 

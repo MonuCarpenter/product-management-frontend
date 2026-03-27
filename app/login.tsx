@@ -2,10 +2,14 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
     Animated,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { getAuthToken } from "../api";
@@ -15,6 +19,8 @@ export default function LoginRoute() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginMutation = useLogin();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -47,59 +53,93 @@ export default function LoginRoute() {
   }, [fadeAnim, router, scaleAnim]);
 
   const handleLogin = async () => {
+    console.log("Login pressed", { username, password });
+
     if (!username.trim() || !password.trim()) {
       Toast.show({ type: "error", text1: "Enter credentials" });
       return;
     }
 
+    setLoading(true);
+    setErrorMessage(null);
+    Toast.show({ type: "info", text1: "Logging in..." });
+
     try {
       const result = await loginMutation.mutateAsync({
-        email: username,
+        email: username.trim(),
         password,
       });
+      console.log("Login result", result);
+
       if (result?.token) {
         Toast.show({ type: "success", text1: "Login successful" });
         router.replace({ pathname: "/products" } as any);
       } else {
-        Toast.show({ type: "error", text1: "Invalid login response" });
+        const message = result?.message || "Invalid login response";
+        setErrorMessage(message);
+        Toast.show({ type: "error", text1: message });
       }
-    } catch (err) {
-      Toast.show({ type: "error", text1: "Login failed" });
+    } catch (err: any) {
+      console.error("Login error", err);
+      const message =
+        err?.response?.data?.message || err?.message || "Login failed";
+      setErrorMessage(message);
+      Toast.show({ type: "error", text1: message });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-      ]}
+    <KeyboardAvoidingView
+      style={styles.keyboardView}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
     >
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor="#bbb"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={[styles.input, styles.inputLast]}
-        placeholder="Password"
-        placeholderTextColor="#bbb"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-      <Text style={styles.hint}>
-        Use any non-empty credentials for demo mode
-      </Text>
-    </Animated.View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Animated.View
+          style={[
+            styles.container,
+            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+          ]}
+        >
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            placeholderTextColor="#bbb"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            editable={!loading}
+          />
+          <TextInput
+            style={[styles.input, styles.inputLast]}
+            placeholder="Password"
+            placeholderTextColor="#bbb"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? "Logging in..." : "Login"}
+            </Text>
+          </TouchableOpacity>
+          {errorMessage ? (
+            <Text style={styles.error}>{errorMessage}</Text>
+          ) : null}
+          <Text style={styles.hint}>
+            Provide your real account credentials to access the production API.
+          </Text>
+        </Animated.View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -150,8 +190,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  keyboardView: {
+    flex: 1,
+    backgroundColor: "#050505",
+  },
   hint: {
     color: "#777",
     fontSize: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+  },
+  error: {
+    color: "tomato",
+    marginBottom: 10,
+    fontSize: 13,
+    textAlign: "center",
   },
 });
