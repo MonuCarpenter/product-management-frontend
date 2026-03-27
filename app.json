@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "product-management-frontend",
-    "slug": "product-management-frontend",
+    "name": "Product Management System",
+    "slug": "pms",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "productmanagementfrontend",
+    "scheme": "pms",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash-icon.png",
@@ -22,7 +22,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.monuc1315.pms"
     },
     "web": {
       "bundler": "metro",
