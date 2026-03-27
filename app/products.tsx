@@ -1,16 +1,15 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { Redirect, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { getAuthToken, setAuthToken } from "../api";
-import { useProducts, useCurrentUser } from "../api-hooks";
-import { useRef, useCallback } from "react";
-import { MaterialIcons } from "@expo/vector-icons";
+import { useCurrentUser, useProducts } from "../api-hooks";
 
 export default function ProductsRoute() {
   const router = useRouter();
@@ -121,7 +120,9 @@ export default function ProductsRoute() {
       {/* User menu */}
       {menuVisible && (
         <View style={styles.menu}>
-          <Text style={styles.menuUserName}>{user?.name || user?.email || "User"}</Text>
+          <Text style={styles.menuUserName}>
+            {user?.name || user?.email || "User"}
+          </Text>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
